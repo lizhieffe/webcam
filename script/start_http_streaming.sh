@@ -5,7 +5,35 @@
 INTERNAL_IP=$(ip route get 8.8.8.8 | awk '{print $NF; exit}')
 PORT=8080
 
-SOUT='#standard{access=http,mux=ts,dst='${INTERNAL_IP}':'${PORT}',name=stream,mime=video/ts}'
+VIDEO_CODEC=h264
+CONTAINER=ts
 
-# -vvv: extra verbose
-cvlc v4l2:///dev/video0:chroma=h264:width=800:height=600 --sout $SOUT -vvv
+WIDTH=800
+HEIGHT=300
+
+Start() {
+  echo "Starting vlc HTTP streaming ..."
+  SOUT='#transcode{acodec=a52,ab=32}:http{mux='${CONTAINER}',dst='${INTERNAL_IP}':'${PORT}',name=stream,mime=video/ts}'
+  cvlc v4l2:///dev/video0:chroma=${VIDEO_CODEC}:width=${WIDTH}:height=${HEIGHT} :input-slave="alsa://hw:1,0" --sout ${SOUT} -vvv
+}
+
+StartVideoOnly() {
+  echo "Starting vlc HTTP streaming (video only) ..."
+  SOUT='#standard{access=http,mux='${CONTAINER}',dst='${INTERNAL_IP}':'${PORT}',name=stream,mime=video/ts}'
+  cvlc v4l2:///dev/video0:chroma=${VIDEO_CODEC}:width=${WIDTH}:height=${HEIGHT} --sout $SOUT -vvv
+}
+
+
+case "$1" in
+  start)
+    Start
+    ;;
+  start_video_only)
+    StartVideoOnly
+    ;;
+  *)
+    echo "Usage: $0 {start|start_video_only|stop}"
+    ;;
+esac
+
+exit 0
