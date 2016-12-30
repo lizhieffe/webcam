@@ -23,6 +23,12 @@ StartVideoOnly() {
   cvlc v4l2:///dev/video0:chroma=${VIDEO_CODEC}:width=${WIDTH}:height=${HEIGHT} --sout $SOUT -vvv
 }
 
+# TODO: add audio in output.
+SaveToDisk() {
+  echo "Saving vlc HTTP streaming to disk ..."
+  SOUT='#standard{access=file,mux='${CONTAINER}',dst=output.ts}'
+  cvlc v4l2:///dev/video0:chroma=${VIDEO_CODEC}:width=${WIDTH}:height=${HEIGHT} --sout $SOUT -vvv
+}
 
 case "$1" in
   start)
@@ -31,8 +37,11 @@ case "$1" in
   start_video_only)
     StartVideoOnly
     ;;
+  save_to_disk)
+    SaveToDisk
+    ;;
   *)
-    echo "Usage: $0 {start|start_video_only|stop}"
+    echo "Usage: $0 {start|start_video_only|save_to_disk|stop}"
     ;;
 esac
 
